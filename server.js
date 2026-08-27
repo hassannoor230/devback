@@ -82,6 +82,10 @@ app.get('/api', (req, res) => {
   res.json({ success: true, message: 'Devcorex API is running' })
 })
 
+app.get('/api/health', (req, res) => {
+  res.json({ success: true, message: 'API is running' })
+})
+
 app.use('/api/auth', requireDatabase, authRoutes)
 app.use('/api/projects', requireDatabase, projectRoutes)
 app.use('/api/contacts', requireDatabase, contactRoutes)
@@ -107,7 +111,7 @@ app.use((err, req, res, next) => {
   console.error('Unhandled error:', err.message)
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Internal server error',
+    message: err.status && err.status < 500 ? err.message : 'Internal server error',
   })
 })
 

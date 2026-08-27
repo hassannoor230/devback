@@ -25,10 +25,18 @@ export const createContact = async (req, res) => {
       html,
     })
   } catch (error) {
-    console.error('Failed to send email:', error)
+    console.error('Failed to send email:', error.message)
+    return res.status(500).json({
+      success: false,
+      message: 'Unable to send message',
+    })
   }
 
-  res.status(201).json(contact)
+  res.status(201).json({
+    success: true,
+    message: 'Message sent successfully',
+    contact,
+  })
 }
 
 export const deleteContact = async (req, res) => {
