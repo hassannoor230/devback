@@ -30,3 +30,9 @@ export const updateManySettings = async (req, res) => {
   }
   res.json({ message: 'Settings updated' })
 }
+
+export const deleteSetting = async (req, res) => {
+  const setting = await Setting.findOneAndDelete({ key: req.params.key })
+  if (!setting) return res.status(404).json({ message: 'Setting not found' })
+  res.json({ message: 'Setting deleted' })
+}
