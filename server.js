@@ -18,19 +18,20 @@ dotenv.config()
 const app = express()
 
 const allowedOrigins = [
-  process.env.FRONTEND_URL,
-  'https://devcorex-txu6.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000',
+  process.env.FRONTEND_URL,
+  process.env.CLIENT_URL,
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined,
+  process.env.NEXT_PUBLIC_SITE_URL,
 ].filter(Boolean)
 
 const corsOptions = {
   origin: (origin, callback) => {
     if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true)
-    } else {
-      callback(new Error('Not allowed by CORS'))
+      return callback(null, true)
     }
+    return callback(new Error('Not allowed by CORS'))
   },
   credentials: true,
 }
@@ -88,8 +89,13 @@ app.get('/api', (req, res) => {
   res.json({ success: true, message: 'Devcorex API is running' })
 })
 
-app.get('/api/health', (req, res) => {
-  res.json({ success: true, message: 'API is running' })
+app.get('/api/health', async (req, res) => {
+  try {
+    await connectDB()
+    res.json({ success: true, database: 'connected', message: 'API is running' })
+  } catch (error) {
+    res.status(500).json({ success: false, database: 'disconnected', message: error.message })
+  }
 })
 
 app.get('/', (req, res) => {
@@ -119,9 +125,10 @@ app.use((err, req, res, next) => {
     name: err?.name,
     stack: err?.stack,
   })
-  res.status(err.status || 500).json({
+  const status = err.status || 500
+  res.status(status).json({
     success: false,
-    message: err.status && err.status < 500 ? err.message : 'Internal server error',
+    message: status < 500 ? err.message : err.message || 'Internal server error',
   })
 })
 
