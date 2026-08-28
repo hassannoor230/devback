@@ -86,6 +86,10 @@ app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'API is running' })
 })
 
+app.get('/', (req, res) => {
+  res.json({ success: true, message: 'Devcorex API is running' })
+})
+
 app.use('/api/auth', requireDatabase, authRoutes)
 app.use('/api/projects', requireDatabase, projectRoutes)
 app.use('/api/contacts', requireDatabase, contactRoutes)
@@ -97,10 +101,6 @@ const clientDistPath = path.join(path.dirname(fileURLToPath(import.meta.url)), '
 if (fs.existsSync(clientDistPath)) {
   app.use(express.static(clientDistPath))
   app.get('*', (req, res) => res.sendFile(path.join(clientDistPath, 'index.html')))
-} else {
-  app.get('/', (req, res) => {
-    res.json({ success: true, message: 'Devcorex API is running' })
-  })
 }
 
 app.use((req, res) => {
