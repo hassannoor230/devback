@@ -35,7 +35,11 @@ export const login = async (req, res) => {
 
     res.json({ token, user: { id: user._id, email: user.email } })
   } catch (error) {
-    console.error('Login error:', error.message)
+    console.error('Login error:', {
+      message: error?.message,
+      name: error?.name,
+      stack: error?.stack,
+    })
     res.status(500).json({ message: 'Unable to complete login' })
   }
 }

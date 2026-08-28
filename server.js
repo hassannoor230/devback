@@ -19,6 +19,7 @@ const app = express()
 
 const allowedOrigins = [
   process.env.FRONTEND_URL,
+  'https://devcorex-txu6.vercel.app',
   'http://localhost:5173',
   'http://localhost:3000',
 ].filter(Boolean)
@@ -68,6 +69,11 @@ const requireDatabase = async (req, res, next) => {
     await connectDB()
     next()
   } catch (error) {
+    console.error('requireDatabase middleware error:', {
+      message: error?.message,
+      name: error?.name,
+      stack: error?.stack,
+    })
     next(error)
   }
 }
@@ -108,7 +114,11 @@ app.use((req, res) => {
 })
 
 app.use((err, req, res, next) => {
-  console.error('Unhandled error:', err.message)
+  console.error('Unhandled error:', {
+    message: err?.message,
+    name: err?.name,
+    stack: err?.stack,
+  })
   res.status(err.status || 500).json({
     success: false,
     message: err.status && err.status < 500 ? err.message : 'Internal server error',
