@@ -30,9 +30,13 @@ const allowedOrigins = [
   process.env.NEXT_PUBLIC_SITE_URL,
 ].filter(Boolean)
 
+const isAllowedOrigin = (origin) =>
+  allowedOrigins.includes(origin) ||
+  /^https:\/\/devcorex-[a-z0-9]+\.vercel\.app$/i.test(origin)
+
 app.use((req, res, next) => {
   const origin = req.headers.origin
-  if (origin && allowedOrigins.includes(origin)) {
+  if (origin && isAllowedOrigin(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin)
     res.setHeader('Vary', 'Origin')
   }
