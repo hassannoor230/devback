@@ -4,6 +4,7 @@ import User from './models/User.js'
 import Project from './models/Project.js'
 import TeamMember from './models/TeamMember.js'
 import Setting from './models/Setting.js'
+import { defaultProjects } from './config/defaultContent.js'
 
 dotenv.config()
 
@@ -28,30 +29,7 @@ const seedData = async () => {
     password: process.env.ADMIN_PASSWORD,
   })
 
-  await Project.insertMany([
-    {
-      title: 'NexusFlow',
-      sub: 'Enterprise Workflow Automation',
-      desc: 'A powerful SaaS platform automating complex business workflows for 200+ enterprise clients with real-time analytics.',
-      tech: ['React', 'Node.js', 'PostgreSQL', 'Redis'],
-      category: 'SaaS',
-      color: '#C9A84C',
-      year: '2024',
-      link: '#',
-      image: 'https://image.thum.io/get/width/600/crop/800/https://nexusflow.demo',
-    },
-    {
-      title: 'Best Hair',
-      sub: 'Hair Salon Platform',
-      desc: 'A modern hair salon website with booking system, service showcases, and elegant UI for premium salon experience.',
-      tech: ['React', 'Tailwind CSS', 'Vercel'],
-      category: 'Salon',
-      color: '#C9A84C',
-      year: '2024',
-      link: 'https://best-hair.vercel.app/',
-      image: 'https://image.thum.io/get/width/600/crop/800/https://best-hair.vercel.app',
-    },
-  ])
+  await Project.insertMany(defaultProjects)
 
   await TeamMember.insertMany([
     {

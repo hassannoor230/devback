@@ -78,6 +78,16 @@ const seedAdmin = async () => {
 }
 
 const seedDefaultContent = async () => {
+  const projectCatalogMigrationKey = 'project_catalog_v2'
+  const hasMigratedProjectCatalog = await Setting.exists({ key: projectCatalogMigrationKey })
+
+  // Replace only the old placeholder portfolio records. User-created projects are preserved.
+  if (!hasMigratedProjectCatalog) {
+    await Project.deleteMany({
+      title: { $in: ['NexusFlow', 'VaultPay', 'Luxara', 'Cerebrix', 'Archivio', 'Crono', 'Best Hair'] },
+    })
+  }
+
   const results = await Promise.all([
     Project.bulkWrite(defaultProjects.map((project) => ({
       updateOne: {
@@ -101,6 +111,14 @@ const seedDefaultContent = async () => {
       },
     }))),
   ])
+
+  if (!hasMigratedProjectCatalog) {
+    await Setting.updateOne(
+      { key: projectCatalogMigrationKey },
+      { $set: { value: 'completed' } },
+      { upsert: true },
+    )
+  }
 
   if (results.some((result) => result.upsertedCount > 0)) {
     console.log('Missing default website content created')
