@@ -5,6 +5,10 @@ import { fileURLToPath } from 'url'
 import dotenv from 'dotenv'
 import connectDB from './config/db.js'
 import User from './models/User.js'
+import Project from './models/Project.js'
+import TeamMember from './models/TeamMember.js'
+import Setting from './models/Setting.js'
+import { defaultProjects, defaultSettings, defaultTeamMembers } from './config/defaultContent.js'
 
 import authRoutes from './routes/auth.js'
 import projectRoutes from './routes/projects.js'
@@ -69,9 +73,56 @@ const seedAdmin = async () => {
   }
 }
 
+const seedDefaultContent = async () => {
+  const results = await Promise.all([
+    Project.bulkWrite(defaultProjects.map((project) => ({
+      updateOne: {
+        filter: { title: project.title },
+        update: { $setOnInsert: project },
+        upsert: true,
+      },
+    }))),
+    TeamMember.bulkWrite(defaultTeamMembers.map((member) => ({
+      updateOne: {
+        filter: { name: member.name },
+        update: { $setOnInsert: member },
+        upsert: true,
+      },
+    }))),
+    Setting.bulkWrite(defaultSettings.map((setting) => ({
+      updateOne: {
+        filter: { key: setting.key },
+        update: { $setOnInsert: setting },
+        upsert: true,
+      },
+    }))),
+  ])
+
+  if (results.some((result) => result.upsertedCount > 0)) {
+    console.log('Missing default website content created')
+  }
+}
+
+let databaseInitialization
+
+const initializeDatabase = async () => {
+  if (!databaseInitialization) {
+    databaseInitialization = connectDB()
+      .then(async () => {
+        await seedAdmin()
+        await seedDefaultContent()
+      })
+      .catch((error) => {
+        databaseInitialization = null
+        throw error
+      })
+  }
+  return databaseInitialization
+}
+
 const requireDatabase = async (req, res, next) => {
   try {
-    await connectDB()
+    await initializeDatabase()
     next()
   } catch (error) {
     console.error('requireDatabase middleware error:', {
@@ -83,8 +134,7 @@ const requireDatabase = async (req, res, next) => {
   }
 }
 
-connectDB()
-  .then(() => seedAdmin())
+initializeDatabase()
   .catch((err) => {
     console.error('Startup error:', err.message)
   })
